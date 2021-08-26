@@ -21,6 +21,10 @@ int main(int argc, char* argv[]){
     return -1;
   }
   int listenfd = socket(AF_INET, SOCK_STREAM, 0);
+  int opt = 1; unsigned int len = sizeof(opt);
+  setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &opt, len);
+  setsockopt(listenfd, SOL_SOCKET, SO_KEEPALIVE, &opt, len);
+
   struct sockaddr_in ser_addr;
   ser_addr.sin_family = AF_INET;
   ser_addr.sin_port = htons(atoi(argv[1]));
