@@ -18,7 +18,7 @@ using namespace std;
 
 char buf[105];
 int epfd;
-char con_msg[]{"Client connected..."};
+char send_msg[205];
 
 int main(int argc, char* argv[]){
   if(argc != 2){
@@ -112,15 +112,18 @@ int main(int argc, char* argv[]){
           epoll_ctl(epfd, EPOLL_CTL_ADD, clientfd, &ev);
           struct sockaddr_in* addr_in = (struct sockaddr_in *)&addr;
           printf("Client %s(%d) connected.\n", inet_ntoa(addr_in->sin_addr), clientfd);
-          if(sendto(udpfd, con_msg, strlen(con_msg), 0, (struct sockaddr *)&client_in, sizeof(client_in)) == -1){
-            printf("UDP ERROR.\n");
-          }
+          memset(send_msg, 0, sizeof(send_msg));
+          sprintf(send_msg, "Client %s(%d) connected.\n", inet_ntoa(addr_in->sin_addr), clientfd);
+          sendto(udpfd, send_msg, strlen(send_msg), 0, (struct sockaddr *)&client_in, sizeof(client_in));
         }
         else if(events[i].events & EPOLLIN){
           memset(buf, 0, sizeof(buf));
           int clientfd = events[i].data.fd;
           if(read(clientfd, buf, sizeof(buf)) <= 0){
             printf("Client %d disconnected.\n", clientfd);
+            memset(send_msg, 0, sizeof(send_msg));
+            sprintf(send_msg, "Client %d disconnected.\n", clientfd);
+            sendto(udpfd, send_msg, strlen(send_msg), 0, (struct sockaddr *)&client_in, sizeof(client_in));
             memset(&ev, 0, sizeof(ev));
             ev.data.fd = clientfd;
             ev.events = EPOLLIN;
@@ -129,11 +132,16 @@ int main(int argc, char* argv[]){
             continue;
           }
           printf("Client %d: %s\n", clientfd, buf);
-          write(clientfd, buf, strlen(buf));
+          // write(clientfd, buf, strlen(buf));
+          memset(send_msg, 0, sizeof(send_msg));
+          sprintf(send_msg, "Client %d: %s\n", clientfd, buf);
+          sendto(udpfd, send_msg, strlen(send_msg), 0, (struct sockaddr *)&client_in, sizeof(client_in));
         }
       }
     }
   }
   close(epfd);
+  close(listenfd);
+  close(udpfd);
   return 0;
 }

@@ -7,6 +7,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <net/if.h>
+#include <pthread.h>
 
 using namespace std;
 
@@ -16,15 +17,7 @@ using namespace std;
 char buff[105];
 char con_msg[105];
 
-int main(int argc, char* argv[]){
-    if(argc != 3){
-        printf("Usage: ./client 127.0.0.1 5005\n");
-        return -1;
-    }
-
-    // local socket
-    int sockfd = socket(AF_INET, SOCK_STREAM, 0);
-
+void *con(void *arg){
     // udp socket
     int udpfd = socket(AF_INET, SOCK_DGRAM, 0);
     struct sockaddr_in client_addr;
@@ -42,6 +35,28 @@ int main(int argc, char* argv[]){
     group.imr_ifindex = if_nametoindex("eth0");
     setsockopt(udpfd, IPPROTO_IP, IP_ADD_MEMBERSHIP, &group, sizeof(group));
 
+    while(1){
+        memset(con_msg, 0, sizeof(con_msg));
+        if(recvfrom(udpfd, con_msg, sizeof(con_msg), 0, NULL, 0) == -1){
+            printf("UDP ERROR.\n");
+        }
+        printf("%s", con_msg);
+    }
+    close(udpfd);
+}
+
+
+int main(int argc, char** argv){
+    if(argc != 3){
+        printf("Usage: ./client 127.0.0.1 5005\n");
+        return -1;
+    }
+    pthread_t tid;
+    pthread_create(&tid, NULL, con, NULL);
+    
+    // local socket
+    int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+
     // server socket
     struct sockaddr_in serv_addr;
     memset(&serv_addr, 0, sizeof(serv_addr));
@@ -50,26 +65,20 @@ int main(int argc, char* argv[]){
     serv_addr.sin_addr.s_addr = inet_addr(argv[1]);
     if (connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) != 0){
         printf("Connect Error.\n");
-        return -1;
     }
     while(1){
-        // memset(buff, 0, sizeof(buff));
+        memset(buff, 0, sizeof(buff));
         // printf("Input: ");
-        // scanf("%s", buff);
-        // if(write(sockfd, buff, strlen(buff)) == -1){
-        //     printf("Write Error.\n");
-        //     return -1;
-        // }
+        scanf("%s", buff);
+        if(write(sockfd, buff, strlen(buff)) == -1){
+            printf("Write Error.\n");
+        }
         // if(read(sockfd, buff, sizeof(buff)) == -1){
         //     printf("Read Error.\n");
-        //     return -1;
         // }
         // printf("Server: %s\n", buff);
-        memset(con_msg, 0, sizeof(con_msg));
-        if(recvfrom(udpfd, con_msg, sizeof(con_msg), 0, NULL, 0) == -1){
-            printf("UDP ERROR.\n");
-        }
-        printf("%s\n", con_msg);
+
     }
+    close(sockfd);
     return 0;
 }
