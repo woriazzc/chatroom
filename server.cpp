@@ -7,28 +7,34 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/epoll.h>
+#include <net/if.h>
 
 using namespace std;
 
 #define MAXEVENTS 200
+#define GROUP "239.0.0.2"
+#define CLIENT_PORT 9000
+#define SERVER_PORT 6666
 
 char buf[105];
 int epfd;
+char con_msg[]{"Client connected..."};
 
 int main(int argc, char* argv[]){
   if(argc != 2){
     printf("Usage: ./server 5005\n");
     return -1;
   }
+
+  // listen socket
   int listenfd = socket(AF_INET, SOCK_STREAM, 0);
   int opt = 1; unsigned int len = sizeof(opt);
   setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &opt, len);
   setsockopt(listenfd, SOL_SOCKET, SO_KEEPALIVE, &opt, len);
-
   struct sockaddr_in ser_addr;
   ser_addr.sin_family = AF_INET;
   ser_addr.sin_port = htons(atoi(argv[1]));
-  ser_addr.sin_addr.s_addr = INADDR_ANY;
+  ser_addr.sin_addr.s_addr = htonl(INADDR_ANY);
   if(bind(listenfd, (struct sockaddr *)&ser_addr, sizeof(ser_addr)) != 0){
     printf("Bind Error.\n");
     close(listenfd);
@@ -39,6 +45,33 @@ int main(int argc, char* argv[]){
     close(listenfd);
     return -1;
   }
+
+
+  // udp socket
+  int udpfd = socket(AF_INET, SOCK_DGRAM, 0);
+  struct sockaddr_in udp_addr;
+  memset(&udp_addr, 0, sizeof(udp_addr));
+  udp_addr.sin_family = AF_INET;
+  udp_addr.sin_port = htons(SERVER_PORT);
+  udp_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+  bind(udpfd, (struct sockaddr *)&udp_addr, sizeof(udp_addr));
+
+  // set multicast
+  struct ip_mreqn group;
+  memset(&group, 0, sizeof(group));
+  group.imr_address.s_addr = htonl(INADDR_ANY);
+  group.imr_multiaddr.s_addr = inet_addr(GROUP);
+  group.imr_ifindex = if_nametoindex("eth0");
+  setsockopt(udpfd, IPPROTO_IP, IP_MULTICAST_IF, &group, sizeof(group));
+
+  // multicast sockaddr
+  struct sockaddr_in client_in;
+  memset(&client_in, 0, sizeof(client_in));
+  client_in.sin_family = AF_INET;
+  client_in.sin_port = htons(CLIENT_PORT);
+  client_in.sin_addr.s_addr = inet_addr(GROUP);
+
+
   if((epfd = epoll_create(1)) == -1){
     printf("Epoll Create Error.\n");
     return -1;
@@ -79,6 +112,9 @@ int main(int argc, char* argv[]){
           epoll_ctl(epfd, EPOLL_CTL_ADD, clientfd, &ev);
           struct sockaddr_in* addr_in = (struct sockaddr_in *)&addr;
           printf("Client %s(%d) connected.\n", inet_ntoa(addr_in->sin_addr), clientfd);
+          if(sendto(udpfd, con_msg, strlen(con_msg), 0, (struct sockaddr *)&client_in, sizeof(client_in)) == -1){
+            printf("UDP ERROR.\n");
+          }
         }
         else if(events[i].events & EPOLLIN){
           memset(buf, 0, sizeof(buf));
