@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1023</width>
-    <height>565</height>
+    <width>851</width>
+    <height>835</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -90,7 +90,13 @@
                    <number>0</number>
                   </property>
                   <item>
-                   <widget class="QTextBrowser" name="msgBrowser"/>
+                   <widget class="QTextBrowser" name="msgBrowser">
+                    <property name="font">
+                     <font>
+                      <pointsize>14</pointsize>
+                     </font>
+                    </property>
+                   </widget>
                   </item>
                  </layout>
                 </widget>
@@ -118,10 +124,20 @@
                     <property name="enabled">
                      <bool>true</bool>
                     </property>
+                    <property name="font">
+                     <font>
+                      <pointsize>11</pointsize>
+                     </font>
+                    </property>
                    </widget>
                   </item>
                   <item>
                    <widget class="QComboBox" name="sizeCbx">
+                    <property name="font">
+                     <font>
+                      <pointsize>11</pointsize>
+                     </font>
+                    </property>
                     <item>
                      <property name="text">
                       <string>5</string>
@@ -173,7 +189,7 @@
                      <string>...</string>
                     </property>
                     <property name="icon">
-                     <iconset>
+                     <iconset resource="res.qrc">
                       <normaloff>:/images/bold.png</normaloff>:/images/bold.png</iconset>
                     </property>
                     <property name="checkable">
@@ -190,7 +206,7 @@
                      <string>...</string>
                     </property>
                     <property name="icon">
-                     <iconset>
+                     <iconset resource="res.qrc">
                       <normaloff>:/images/italic.png</normaloff>:/images/italic.png</iconset>
                     </property>
                     <property name="checkable">
@@ -207,7 +223,7 @@
                      <string>...</string>
                     </property>
                     <property name="icon">
-                     <iconset>
+                     <iconset resource="res.qrc">
                       <normaloff>:/images/under.png</normaloff>:/images/under.png</iconset>
                     </property>
                     <property name="checkable">
@@ -224,7 +240,7 @@
                      <string>...</string>
                     </property>
                     <property name="icon">
-                     <iconset>
+                     <iconset resource="res.qrc">
                       <normaloff>:/images/color.png</normaloff>:/images/color.png</iconset>
                     </property>
                    </widget>
@@ -238,7 +254,7 @@
                      <string>...</string>
                     </property>
                     <property name="icon">
-                     <iconset>
+                     <iconset resource="res.qrc">
                       <normaloff>:/images/save.png</normaloff>:/images/save.png</iconset>
                     </property>
                    </widget>
@@ -252,7 +268,7 @@
                      <string>...</string>
                     </property>
                     <property name="icon">
-                     <iconset>
+                     <iconset resource="res.qrc">
                       <normaloff>:/images/clear.png</normaloff>:/images/clear.png</iconset>
                     </property>
                    </widget>
@@ -265,11 +281,19 @@
             </item>
             <item>
              <widget class="QTextEdit" name="msgTxtEdit">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
               <property name="maximumSize">
                <size>
                 <width>16777215</width>
-                <height>100</height>
+                <height>200</height>
                </size>
+              </property>
+              <property name="font">
+               <font>
+                <pointsize>13</pointsize>
+               </font>
               </property>
              </widget>
             </item>
@@ -326,6 +350,11 @@
             </item>
             <item>
              <widget class="QLabel" name="userNumLbl">
+              <property name="font">
+               <font>
+                <pointsize>10</pointsize>
+               </font>
+              </property>
               <property name="text">
                <string>在线人数:0人</string>
               </property>
@@ -359,6 +388,12 @@
       </item>
       <item>
        <widget class="QWidget" name="widget_15" native="true">
+        <property name="maximumSize">
+         <size>
+          <width>200</width>
+          <height>16777215</height>
+         </size>
+        </property>
         <layout class="QHBoxLayout" name="horizontalLayout_12">
          <property name="leftMargin">
           <number>0</number>
@@ -374,6 +409,11 @@
          </property>
          <item>
           <widget class="QTableWidget" name="tableWidget">
+           <property name="font">
+            <font>
+             <pointsize>11</pointsize>
+            </font>
+           </property>
            <column>
             <property name="text">
              <string>用户名:</string>
@@ -390,6 +430,8 @@
   </layout>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources/>
+ <resources>
+  <include location="res.qrc"/>
+ </resources>
  <connections/>
 </ui>

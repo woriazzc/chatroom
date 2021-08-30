@@ -6,11 +6,12 @@
 #include <QUdpSocket>
 #include <QTextEdit>
 #include <QMessageBox>
+#include <QCloseEvent>
 
 #define GROUP_IP "239.0.0.2"
 #define G_PORT 9000
 #define SERVER_PORT 5005
-#define SERVER_IP "172.29.164.22"
+#define SERVER_IP "127.0.0.1"
 
 namespace Ui {
 class Widget;

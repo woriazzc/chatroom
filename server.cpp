@@ -16,9 +16,9 @@ using namespace std;
 #define CLIENT_PORT 9000
 #define SERVER_PORT 6666
 
-char buf[105];
+char buf[10005];
 int epfd;
-char send_msg[205];
+char send_msg[20005];
 
 int main(int argc, char* argv[]){
   if(argc != 2){
@@ -134,7 +134,8 @@ int main(int argc, char* argv[]){
           printf("Client %d: %s\n", clientfd, buf);
           // write(clientfd, buf, strlen(buf));
           memset(send_msg, 0, sizeof(send_msg));
-          sprintf(send_msg, "Client %d: %s\n", clientfd, buf);
+          sprintf(send_msg, "Client %d\n%s\n", clientfd, buf);
+          // sprintf(send_msg, "%s\n", buf);
           sendto(udpfd, send_msg, strlen(send_msg), 0, (struct sockaddr *)&client_in, sizeof(client_in));
         }
       }

@@ -72,7 +72,7 @@ public:
     {
         if (Widget->objectName().isEmpty())
             Widget->setObjectName(QStringLiteral("Widget"));
-        Widget->resize(1023, 565);
+        Widget->resize(851, 835);
         horizontalLayout_13 = new QHBoxLayout(Widget);
         horizontalLayout_13->setSpacing(6);
         horizontalLayout_13->setContentsMargins(11, 11, 11, 11);
@@ -114,6 +114,9 @@ public:
         horizontalLayout_8->setContentsMargins(0, 0, 0, 0);
         msgBrowser = new QTextBrowser(widget_12);
         msgBrowser->setObjectName(QStringLiteral("msgBrowser"));
+        QFont font;
+        font.setPointSize(14);
+        msgBrowser->setFont(font);
 
         horizontalLayout_8->addWidget(msgBrowser);
 
@@ -131,11 +134,15 @@ public:
         fontCbx = new QFontComboBox(frame_3);
         fontCbx->setObjectName(QStringLiteral("fontCbx"));
         fontCbx->setEnabled(true);
+        QFont font1;
+        font1.setPointSize(11);
+        fontCbx->setFont(font1);
 
         horizontalLayout_9->addWidget(fontCbx);
 
         sizeCbx = new QComboBox(frame_3);
         sizeCbx->setObjectName(QStringLiteral("sizeCbx"));
+        sizeCbx->setFont(font1);
 
         horizontalLayout_9->addWidget(sizeCbx);
 
@@ -198,7 +205,11 @@ public:
 
         msgTxtEdit = new QTextEdit(widget_10);
         msgTxtEdit->setObjectName(QStringLiteral("msgTxtEdit"));
-        msgTxtEdit->setMaximumSize(QSize(16777215, 100));
+        msgTxtEdit->setEnabled(true);
+        msgTxtEdit->setMaximumSize(QSize(16777215, 200));
+        QFont font2;
+        font2.setPointSize(13);
+        msgTxtEdit->setFont(font2);
 
         verticalLayout_5->addWidget(msgTxtEdit);
 
@@ -227,6 +238,9 @@ public:
 
         userNumLbl = new QLabel(widget_14);
         userNumLbl->setObjectName(QStringLiteral("userNumLbl"));
+        QFont font3;
+        font3.setPointSize(10);
+        userNumLbl->setFont(font3);
 
         horizontalLayout_11->addWidget(userNumLbl);
 
@@ -247,6 +261,7 @@ public:
 
         widget_15 = new QWidget(widget_8);
         widget_15->setObjectName(QStringLiteral("widget_15"));
+        widget_15->setMaximumSize(QSize(200, 16777215));
         horizontalLayout_12 = new QHBoxLayout(widget_15);
         horizontalLayout_12->setSpacing(6);
         horizontalLayout_12->setContentsMargins(11, 11, 11, 11);
@@ -258,6 +273,7 @@ public:
         QTableWidgetItem *__qtablewidgetitem = new QTableWidgetItem();
         tableWidget->setHorizontalHeaderItem(0, __qtablewidgetitem);
         tableWidget->setObjectName(QStringLiteral("tableWidget"));
+        tableWidget->setFont(font1);
 
         horizontalLayout_12->addWidget(tableWidget);
 
