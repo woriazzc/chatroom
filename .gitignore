@@ -238,3 +238,5 @@ dist
 .idea/
 
 test*
+
+config.json
