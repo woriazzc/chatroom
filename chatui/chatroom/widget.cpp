@@ -6,17 +6,23 @@
 #include <QDateTime>
 #include <QFontComboBox>
 
-Widget::Widget(QWidget *parent) :
+Widget::Widget(QString userName, QWidget *parent) :
     QWidget(parent),
     ui(new Ui::Widget)
 {
     ui->setupUi(this);
+    this->setWindowTitle(userName);
+    this->userName = userName;
     tcpSocket = new QTcpSocket(this);
     udpSocket = new QUdpSocket(this);
     udpSocket->bind(QHostAddress::AnyIPv4, G_PORT, QUdpSocket::ShareAddress|QUdpSocket::ReuseAddressHint);
     udpSocket->joinMulticastGroup(QHostAddress(GROUP_IP));
     tcpSocket->connectToHost(QHostAddress(SERVER_IP), SERVER_PORT);
     connect(udpSocket, &QUdpSocket::readyRead, this, &Widget::recvUdpMsg);
+
+    QString msg = "1\n" + this->userName + " connected.";
+    tcpSocket->write(msg.toUtf8());
+
     connect(ui->sendBtn, &QPushButton::clicked, this, &Widget::sndMsg);
 
     connect(ui->boldTBtn, &QToolButton::clicked, this, [=](bool checked){
@@ -82,21 +88,29 @@ void Widget::recvUdpMsg(){
     datagram.resize(udpSocket->pendingDatagramSize());
     udpSocket->readDatagram(datagram.data(), datagram.size());
     QString msg = QString(datagram).trimmed();
-    if(msg.contains("\n")){
-        QString time = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
-        ui->msgBrowser->setTextColor(QColor(Qt::blue));
-        ui->msgBrowser->append(msg.section('\n', 0, 0).trimmed() + QString(":  ") + time);
-        ui->msgBrowser->setTextColor(QColor(Qt::black));
-        ui->msgBrowser->append(msg.section('\n', 1));
-        ui->msgBrowser->append(QString("\n"));
-    }
-    else{
+
+    QString type = msg.section('\n', 0, 0).trimmed();
+    if(type == "1"){    //连接
         QColor col;
         col.setRgb(150, 150, 150);
         ui->msgBrowser->setTextColor(col);
-        ui->msgBrowser->append(msg);
+        ui->msgBrowser->setAlignment(Qt::AlignCenter);
+        ui->msgBrowser->append(msg.section('\n', 1, 1));
         ui->msgBrowser->append(QString("\n"));
         ui->msgBrowser->setTextColor(QColor(Qt::black));
+    }
+    else if(type == "2"){   //消息
+        if(msg.section('\n', 1, 1) == this->userName){
+            ui->msgBrowser->setAlignment(Qt::AlignRight);
+        }
+        else{
+            ui->msgBrowser->setAlignment(Qt::AlignLeft);
+        }
+        ui->msgBrowser->setTextColor(QColor(Qt::blue));
+        ui->msgBrowser->append(msg.section('\n', 2, 2).trimmed());
+        ui->msgBrowser->setTextColor(QColor(Qt::black));
+        ui->msgBrowser->append(msg.section('\n', 3));
+        ui->msgBrowser->append(QString("\n"));
     }
 }
 
@@ -110,11 +124,24 @@ QString Widget::getMsg(QTextEdit *msgTxtEdit){
 void Widget::sndMsg(){
     QString msg = getMsg(ui->msgTxtEdit);
     if(msg == ""){
-        QMessageBox::warning(this,"警告","发送的聊天内容不能为空!");
+        QMessageBox::warning(this, "警告", "发送的聊天内容不能为空!");
         return;
     }
-    tcpSocket->write(msg.toUtf8());
+    QString time = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
+    QString snd_msg = "2\n" + this->userName + "\n" + this->userName + ": " + time + "\n" + msg;
+    tcpSocket->write(snd_msg.toUtf8());
     tcpSocket->flush();
+}
+
+void Widget::closeEvent(QCloseEvent *event)
+{
+    QString msg = "1\n" + this->userName + " disconnected.";
+    tcpSocket->write(msg.toUtf8());
+    tcpSocket->close();
+    tcpSocket->destroyed();
+    udpSocket->close();
+    udpSocket->destroyed();
+    event->accept();
 }
 
 Widget::~Widget()

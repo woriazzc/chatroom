@@ -7,11 +7,7 @@
 #include <QTextEdit>
 #include <QMessageBox>
 #include <QCloseEvent>
-
-#define GROUP_IP "239.0.0.2"
-#define G_PORT 9000
-#define SERVER_PORT 5005
-#define SERVER_IP "127.0.0.1"
+#include "config.h"
 
 namespace Ui {
 class Widget;
@@ -22,7 +18,8 @@ class Widget : public QWidget
     Q_OBJECT
 
 public:
-    explicit Widget(QWidget *parent = 0);
+    explicit Widget(QString userName, QWidget *parent = 0);
+    void closeEvent(QCloseEvent *);
     ~Widget();
 private slots:
     void recvUdpMsg();
@@ -30,6 +27,7 @@ private slots:
     QString getMsg(QTextEdit* msgTxtEdit);
 private:
     Ui::Widget *ui;
+    QString userName;
     QTcpSocket* tcpSocket;
     QUdpSocket* udpSocket;
 };

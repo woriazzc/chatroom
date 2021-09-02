@@ -3,7 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <cassert>
-#include <mysql.h>
+#include <mysql/mysql.h>
 #include <json/json.h>
 
 using namespace std;

@@ -1,0 +1,8 @@
+DROP TRIGGER IF EXISTS t_insUser;
+CREATE TRIGGER t_insUser BEFORE INSERT
+ON `user` FOR EACH ROW
+BEGIN
+	IF NEW.username IN (SELECT username FROM `user`) THEN
+		SIGNAL SQLSTATE 'HY000' SET MESSAGE_TEXT = 'username dupicated';
+	END IF;
+END
