@@ -15,12 +15,16 @@ Widget::Widget(QString userName, QWidget *parent) :
     this->userName = userName;
     tcpSocket = new QTcpSocket(this);
     udpSocket = new QUdpSocket(this);
-    udpSocket->bind(QHostAddress::AnyIPv4, G_PORT, QUdpSocket::ShareAddress|QUdpSocket::ReuseAddressHint);
-    udpSocket->joinMulticastGroup(QHostAddress(GROUP_IP));
+    if(!udpSocket->bind(QHostAddress::AnyIPv4, G_PORT, QUdpSocket::ShareAddress|QUdpSocket::ReuseAddressHint)){
+        qDebug()<<"gg11";
+    }
+    if(!udpSocket->joinMulticastGroup(QHostAddress(GROUP_IP))){
+        qDebug()<<"gg";
+    }
     tcpSocket->connectToHost(QHostAddress(SERVER_IP), SERVER_PORT);
     connect(udpSocket, &QUdpSocket::readyRead, this, &Widget::recvUdpMsg);
 
-    QString msg = "1\n" + this->userName + " connected.";
+    QString msg = QString(CONN) + "\n" + this->userName + "\n" + this->userName + " connected.";
     tcpSocket->write(msg.toUtf8());
 
     connect(ui->sendBtn, &QPushButton::clicked, this, &Widget::sndMsg);
@@ -88,18 +92,17 @@ void Widget::recvUdpMsg(){
     datagram.resize(udpSocket->pendingDatagramSize());
     udpSocket->readDatagram(datagram.data(), datagram.size());
     QString msg = QString(datagram).trimmed();
-
+    qDebug()<<msg;
     QString type = msg.section('\n', 0, 0).trimmed();
-    if(type == "1"){    //连接
+    if(type == CONN || type == DISCONN){    //连接
         QColor col;
         col.setRgb(150, 150, 150);
         ui->msgBrowser->setTextColor(col);
         ui->msgBrowser->setAlignment(Qt::AlignCenter);
-        ui->msgBrowser->append(msg.section('\n', 1, 1));
+        ui->msgBrowser->append(msg.section('\n', 2));
         ui->msgBrowser->append(QString("\n"));
-        ui->msgBrowser->setTextColor(QColor(Qt::black));
     }
-    else if(type == "2"){   //消息
+    else if(type == MESSAGE){   //消息
         if(msg.section('\n', 1, 1) == this->userName){
             ui->msgBrowser->setAlignment(Qt::AlignRight);
         }
@@ -111,6 +114,16 @@ void Widget::recvUdpMsg(){
         ui->msgBrowser->setTextColor(QColor(Qt::black));
         ui->msgBrowser->append(msg.section('\n', 3));
         ui->msgBrowser->append(QString("\n"));
+    }
+    else if(type == USRLST){
+        ui->userNumLbl->setText(QString("在线人数:%1人").arg(msg.section('\n', 1, 1)));
+        ui->tableWidget->clear();
+        QStringList usrList = msg.split('\n', QString::SkipEmptyParts);
+        for(int i = 2; i < usrList.size(); i++){
+            ui->tableWidget->insertRow(0);
+            QTableWidgetItem *table=new QTableWidgetItem(usrList[i]);
+            ui->tableWidget->setItem(0, 0, table);
+        }
     }
 }
 
@@ -128,14 +141,14 @@ void Widget::sndMsg(){
         return;
     }
     QString time = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
-    QString snd_msg = "2\n" + this->userName + "\n" + this->userName + ": " + time + "\n" + msg;
+    QString snd_msg = QString(MESSAGE) + "\n" + this->userName + "\n" + this->userName + ": " + time + "\n" + msg;
     tcpSocket->write(snd_msg.toUtf8());
     tcpSocket->flush();
 }
 
 void Widget::closeEvent(QCloseEvent *event)
 {
-    QString msg = "1\n" + this->userName + " disconnected.";
+    QString msg = QString(DISCONN) + "\n" + this->userName + "\n" + this->userName + " disconnected.";
     tcpSocket->write(msg.toUtf8());
     tcpSocket->close();
     tcpSocket->destroyed();

@@ -10,7 +10,6 @@ Login::Login(QWidget *parent) :
 
     tcpSocket = new QTcpSocket(this);
     tcpSocket->connectToHost(QHostAddress(SERVER_IP), SERVER_PORT);
-
     connect(ui->enr_btn, &QPushButton::clicked, this, &Login::sndEnrMsg);
 
     connect(ui->acc_btn, &QPushButton::clicked, this, &Login::sndAccMsg);
@@ -29,24 +28,29 @@ void Login::sndAccMsg(){
 void Login::recvMsg(){
     QString msg = tcpSocket->readAll();
     QString type = msg.section('\n', 0, 0);
-    if(type == "0"){
+    QMessageBox::warning(this, "错误", "kk!");
+    if(type == LOGIN){
         if(msg.section('\n', 1, 1) == "1"){
             Widget* w = new Widget(this->userName);
             w->show();
             this->close();
         }
-        else{
+        else if(msg.section('\n', 1, 1) == "0"){
             QMessageBox::warning(this, "错误", "用户名或密码错误!");
             return;
         }
+        else if(msg.section('\n', 1, 1) == "-1"){
+            QMessageBox::warning(this, "错误", "用户已在线!");
+            return;
+        }
     }
-    else if(type == "3"){
+    else if(type == ENROLL){
         if(msg.section('\n', 1, 1) == "1"){
             Widget* w = new Widget(this->userName);
             w->show();
             this->close();
         }
-        else{
+        else if(msg.section('\n', 1, 1) == "0"){
             QMessageBox::warning(this, "错误", "注册失败!");
             return;
         }
@@ -56,7 +60,7 @@ void Login::recvMsg(){
 void Login::sndEnrMsg(){
     QString user = ui->userTxt->text();
     QString pwd = ui->pwdTxt->text();
-    QString msg = "3\n" + user + "\n" + pwd;
+    QString msg = QString(ENROLL) + "\n" + user + "\n" + pwd;
     tcpSocket->write(msg.toUtf8());
     this->userName = user;
 }
