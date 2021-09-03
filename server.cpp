@@ -26,11 +26,11 @@ using namespace std;
 #define DISCONN "4"
 #define USRLST "5"
 
-char buf[10005], usr[200], pwd[200], type[10], usrs[10005];
+char buf[10005], usr[200], pwd[200], type[10], usrs[10005], usrid[20];
 int epfd;
-char acc_msg[10], send_msg[20005];
+char login_msg[40], send_msg[20005];
 
-unordered_set<const char *> usrlst;
+unordered_set<int> usrlst;
 
 
 int main(int argc, char* argv[]){
@@ -165,38 +165,51 @@ int main(int argc, char* argv[]){
             for (; buf[p0] && buf[p0] != '\n'; p0++){
               pwd[p1++] = buf[p0];
             }
-            memset(acc_msg, 0, sizeof(acc_msg));
-            if(usrlst.find(usr) != usrlst.end()){
-              sprintf(acc_msg, "%s\n-1", LOGIN);
-              continue;
+            memset(login_msg, 0, sizeof(login_msg));
+            if(strcmp(type, LOGIN) == 0){
+              int uid = con.isValidUser(usr, pwd);
+              if(usrlst.find(uid) != usrlst.end()){
+                sprintf(login_msg, "%s\n-1", LOGIN);
+                write(clientfd, login_msg, strlen(login_msg));
+                continue;
+              }
+              if(uid != 0)
+                usrlst.insert(uid);
+              memset(usrid, 0, sizeof(usrid));
+              itoa(uid, usrid);
+              sprintf(login_msg, "%s\n%s", LOGIN, usrid);
             }
-            if(strcmp(type, LOGIN) == 0)
-              sprintf(acc_msg, "%s\n%c", LOGIN, con.isValidUser(usr, pwd) ? '1' : '0');
-            else if(strcmp(type, ENROLL) == 0)
-              sprintf(acc_msg, "%s\n%c", ENROLL, con.insertUser(usr, pwd) ? '1' : '0');
-            write(clientfd, acc_msg, strlen(acc_msg));
+            else if(strcmp(type, ENROLL) == 0){
+              int uid = con.insertUser(usr, pwd);
+              if(uid != 0)
+                usrlst.insert(uid);
+              memset(usrid, 0, sizeof(usrid));
+              itoa(uid, usrid);
+              sprintf(login_msg, "%s\n%s", ENROLL, usrid);
+            }
+            write(clientfd, login_msg, strlen(login_msg));
           }
           else if(strcmp(type, CONN) == 0 || strcmp(type, DISCONN) == 0){
-            memset(usr, 0, sizeof(usr));
+            memset(usrid, 0, sizeof(usrid));
             int p1 = 0;
             p0++;
             for (; buf[p0] != '\n'; p0++){
-              usr[p1++] = buf[p0];
+              usrid[p1++] = buf[p0];
             }
             if(strcmp(type, CONN) == 0)
-              usrlst.insert(usr);
+              usrlst.insert(atoi(usrid));
             else
-              usrlst.erase(usr);
-              char usrCnt[10] = {0};
+              usrlst.erase(atoi(usrid));
+            char usrCnt[10] = {0};
             itoa((int)usrlst.size(), usrCnt);
             memset(usrs, 0, sizeof(usrs));
             for(auto u:usrlst){
-              strcat(usrs, u);
+              strcat(usrs, con.qryUserName(u));
               strcat(usrs, "\n");
             }
             memset(send_msg, 0, sizeof(send_msg));
             sprintf(send_msg, "%s\n%s\n%s", USRLST, usrCnt, usrs);
-            printf("%s\n", send_msg);
+            // printf("%s\n", send_msg);
             sendto(udpfd, buf, strlen(buf), 0, (struct sockaddr *)&client_in, sizeof(client_in));
             sendto(udpfd, send_msg, strlen(send_msg), 0, (struct sockaddr *)&client_in, sizeof(client_in));
           }

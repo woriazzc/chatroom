@@ -6,25 +6,22 @@
 #include <QDateTime>
 #include <QFontComboBox>
 
-Widget::Widget(QString userName, QWidget *parent) :
+Widget::Widget(QString userName, QString uid, QWidget *parent) :
     QWidget(parent),
     ui(new Ui::Widget)
 {
     ui->setupUi(this);
     this->setWindowTitle(userName);
+    this->uid = uid;
     this->userName = userName;
     tcpSocket = new QTcpSocket(this);
     udpSocket = new QUdpSocket(this);
-    if(!udpSocket->bind(QHostAddress::AnyIPv4, G_PORT, QUdpSocket::ShareAddress|QUdpSocket::ReuseAddressHint)){
-        qDebug()<<"gg11";
-    }
-    if(!udpSocket->joinMulticastGroup(QHostAddress(GROUP_IP))){
-        qDebug()<<"gg";
-    }
+    udpSocket->bind(QHostAddress::AnyIPv4, G_PORT, QUdpSocket::ShareAddress|QUdpSocket::ReuseAddressHint);
+    udpSocket->joinMulticastGroup(QHostAddress(GROUP_IP));
     tcpSocket->connectToHost(QHostAddress(SERVER_IP), SERVER_PORT);
     connect(udpSocket, &QUdpSocket::readyRead, this, &Widget::recvUdpMsg);
 
-    QString msg = QString(CONN) + "\n" + this->userName + "\n" + this->userName + " connected.";
+    QString msg = QString(CONN) + "\n" + this->uid + "\n" + this->userName + " connected.";
     tcpSocket->write(msg.toUtf8());
 
     connect(ui->sendBtn, &QPushButton::clicked, this, &Widget::sndMsg);
@@ -92,7 +89,6 @@ void Widget::recvUdpMsg(){
     datagram.resize(udpSocket->pendingDatagramSize());
     udpSocket->readDatagram(datagram.data(), datagram.size());
     QString msg = QString(datagram).trimmed();
-    qDebug()<<msg;
     QString type = msg.section('\n', 0, 0).trimmed();
     if(type == CONN || type == DISCONN){    //连接
         QColor col;
@@ -117,7 +113,7 @@ void Widget::recvUdpMsg(){
     }
     else if(type == USRLST){
         ui->userNumLbl->setText(QString("在线人数:%1人").arg(msg.section('\n', 1, 1)));
-        ui->tableWidget->clear();
+        ui->tableWidget->setRowCount(0);
         QStringList usrList = msg.split('\n', QString::SkipEmptyParts);
         for(int i = 2; i < usrList.size(); i++){
             ui->tableWidget->insertRow(0);
@@ -148,7 +144,7 @@ void Widget::sndMsg(){
 
 void Widget::closeEvent(QCloseEvent *event)
 {
-    QString msg = QString(DISCONN) + "\n" + this->userName + "\n" + this->userName + " disconnected.";
+    QString msg = QString(DISCONN) + "\n" + this->uid + "\n" + this->userName + " disconnected.";
     tcpSocket->write(msg.toUtf8());
     tcpSocket->close();
     tcpSocket->destroyed();

@@ -18,7 +18,7 @@ class Widget : public QWidget
     Q_OBJECT
 
 public:
-    explicit Widget(QString userName, QWidget *parent = 0);
+    explicit Widget(QString userName, QString uid, QWidget *parent = 0);
     void closeEvent(QCloseEvent *);
     ~Widget();
 private slots:
@@ -27,6 +27,7 @@ private slots:
     QString getMsg(QTextEdit* msgTxtEdit);
 private:
     Ui::Widget *ui;
+    QString uid;
     QString userName;
     QTcpSocket* tcpSocket;
     QUdpSocket* udpSocket;

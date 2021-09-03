@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <cassert>
+#include <stdlib.h>
 #include <mysql/mysql.h>
 #include <json/json.h>
 
@@ -16,4 +17,5 @@ public:
     ~mysqlControler();
     int isValidUser(const char *user, const char *pwd);
     int insertUser(const char *user, const char *pwd);
+    const char *qryUserName(int uid);
 };

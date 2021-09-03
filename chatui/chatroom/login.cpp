@@ -28,14 +28,8 @@ void Login::sndAccMsg(){
 void Login::recvMsg(){
     QString msg = tcpSocket->readAll();
     QString type = msg.section('\n', 0, 0);
-    QMessageBox::warning(this, "错误", "kk!");
     if(type == LOGIN){
-        if(msg.section('\n', 1, 1) == "1"){
-            Widget* w = new Widget(this->userName);
-            w->show();
-            this->close();
-        }
-        else if(msg.section('\n', 1, 1) == "0"){
+        if(msg.section('\n', 1, 1) == "0"){
             QMessageBox::warning(this, "错误", "用户名或密码错误!");
             return;
         }
@@ -43,16 +37,21 @@ void Login::recvMsg(){
             QMessageBox::warning(this, "错误", "用户已在线!");
             return;
         }
-    }
-    else if(type == ENROLL){
-        if(msg.section('\n', 1, 1) == "1"){
-            Widget* w = new Widget(this->userName);
+        else{
+            Widget* w = new Widget(this->userName, msg.section('\n', 1, 1));
             w->show();
             this->close();
         }
-        else if(msg.section('\n', 1, 1) == "0"){
+    }
+    else if(type == ENROLL){
+        if(msg.section('\n', 1, 1) == "0"){
             QMessageBox::warning(this, "错误", "注册失败!");
             return;
+        }
+        else{
+            Widget* w = new Widget(this->userName, msg.section('\n', 1, 1));
+            w->show();
+            this->close();
         }
     }
 }

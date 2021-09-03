@@ -33,16 +33,39 @@ int mysqlControler::isValidUser(const char *user, const char *pwd){
     sprintf(qry, "SELECT uid FROM user WHERE username='%s' AND password='%s'", user, pwd);
     mysql_query(sql, qry);
     MYSQL_RES *result = mysql_store_result(sql);
-    int flg = 0;
-    if(result && (mysql_num_rows(result)))
-        flg = 1;
+    int uid = 0;
+    MYSQL_ROW column;
+    if(result && (mysql_num_rows(result))){
+        while(column = mysql_fetch_row(result)){
+            uid = atoi(column[0]);
+        }
+    }
     mysql_free_result(result);
-    return flg;
+    return uid;
 }
 
 int mysqlControler::insertUser(const char *user, const char *pwd){
     char qry[500];
     memset(qry, 0, sizeof(qry));
     sprintf(qry, "INSERT INTO user VALUES(NULL, '%s', '%s')", user, pwd);
-    return mysql_query(sql, qry) == 0;
+    if(mysql_query(sql, qry) != 0)
+        return 0;
+    else
+        return mysqlControler::isValidUser(user, pwd);
+}
+
+const char * mysqlControler::qryUserName(int uid){
+    char qry[500];
+    memset(qry, 0, sizeof(qry));
+    sprintf(qry, "SELECT username FROM user WHERE uid=%d", uid);
+    mysql_query(sql, qry);
+    MYSQL_RES *result = mysql_store_result(sql);
+    char *user;
+    MYSQL_ROW column;
+    if(result && (mysql_num_rows(result))){
+        while(column = mysql_fetch_row(result)){
+            user = column[0];
+        }
+    }
+    return user;
 }
