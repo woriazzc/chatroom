@@ -11,4 +11,4 @@ mysqlControler: ./utils/mysqlControler.cpp
 utils: ./utils/utils.cpp
 	$(CC) -c ./utils/utils.cpp -o ./out/utils.o
 clean:
-	rm *.o
+	rm -rf ./out/*.o

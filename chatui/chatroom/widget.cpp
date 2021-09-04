@@ -99,7 +99,7 @@ void Widget::recvUdpMsg(){
         ui->msgBrowser->append(QString("\n"));
     }
     else if(type == MESSAGE){   //消息
-        if(msg.section('\n', 1, 1) == this->userName){
+        if(msg.section('\n', 1, 1) == this->uid){
             ui->msgBrowser->setAlignment(Qt::AlignRight);
         }
         else{
@@ -137,7 +137,7 @@ void Widget::sndMsg(){
         return;
     }
     QString time = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
-    QString snd_msg = QString(MESSAGE) + "\n" + this->userName + "\n" + this->userName + ": " + time + "\n" + msg;
+    QString snd_msg = QString(MESSAGE) + "\n" + this->uid + "\n" + this->userName + ": " + time + "\n" + msg;
     tcpSocket->write(snd_msg.toUtf8());
     tcpSocket->flush();
 }

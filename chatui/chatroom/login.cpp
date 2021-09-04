@@ -20,7 +20,7 @@ Login::Login(QWidget *parent) :
 void Login::sndAccMsg(){
     QString user = ui->userTxt->text();
     QString pwd = ui->pwdTxt->text();
-    QString msg = "0\n" + user + "\n" + pwd;
+    QString msg = QString(LOGIN) + "\n" + user + "\n" + pwd;
     tcpSocket->write(msg.toUtf8());
     this->userName = user;
 }
